@@ -1,0 +1,24 @@
+# Local .terraform directories
+**/.terraform/
+
+# Terraform State files (Critical security ignore)
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfstate.d/
+
+# Variables & Secrets (Prevents pushing credentials/keys to Git)
+**/*.tfvars
+**/*.tfvars.json
+*.pem
+.env
+.env.*
+
+# Crash logs
+crash.log
+crash.*.log
+
+# IDE & OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
