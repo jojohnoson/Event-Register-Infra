@@ -2,11 +2,15 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME        = 'infra-project-app'
-        DOCKER_REGISTRY = 'your-dockerhub-username' // Replace with your Docker Hub username
-        IMAGE_NAME      = "${DOCKER_REGISTRY}/${APP_NAME}"
-        IMAGE_TAG       = "${BUILD_NUMBER}"
-        AWS_REGION      = 'us-east-1' // Replace with your AWS Region
+        // References 'aws-credentials' stored in Jenkins Credentials Manager
+        AWS_ACCESS_KEY_ID     = credentials('aws-credentials-usr')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-credentials-pwd')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
+    triggers {
+        // Listens for GitHub webhook push events
+        githubPush()
     }
 
     stages {
@@ -16,94 +20,43 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Terraform Init') {
             steps {
-                // Ensure your SonarQube server is configured in Jenkins System Settings as 'SonarQube'
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=${APP_NAME} \
-                          -Dsonar.sources=src \
-                          -Dsonar.exclusions=**/node_modules/**,.next/** \
-                          -Dsonar.sourceEncoding=UTF-8
-                    '''
-                }
+                sh 'terraform init'
             }
         }
 
-        stage('Quality Gate') {
+        stage('Terraform Format & Validate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    // Pauses pipeline until SonarQube analysis quality gate passes
-                    waitForQualityGate abortPipeline: true
-                }
+                sh 'terraform fmt -check'
+                sh 'terraform validate'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Terraform Plan') {
             steps {
-                script {
-                    echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
-                    // Builds the image using the Dockerfile located inside the src directory
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest -f src/Dockerfile ."
-                }
+                sh 'terraform plan -out=tfplan'
             }
         }
 
-        stage('Trivy Security Scan') {
+        stage('Approval Gate') {
             steps {
-                // Scans the container image for vulnerabilities before pushing
-                sh "trivy image --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG}"
+                // Safety gate: Requires manual approval before changing live AWS infrastructure
+                input message: 'Review the plan output above. Apply infrastructure changes to AWS?', ok: 'Deploy'
             }
         }
 
-        stage('Push Image to Registry') {
+        stage('Terraform Apply') {
             steps {
-                script {
-                    // Requires 'dockerhub-credentials' defined in Jenkins Credentials Manager (Username/Password)
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
-                        sh "docker push ${IMAGE_NAME}:latest"
-                    }
-                }
-            }
-        }
-
-        stage('Deploy Application') {
-            steps {
-                script {
-                    echo "Deploying container version ${IMAGE_TAG}..."
-                    // Injects runtime secrets dynamically instead of storing them in source control
-                    withCredentials([string(credentialsId: 'app-db-password', variable: 'DB_PASSWORD')]) {
-                        sh """
-                            docker stop ${APP_NAME} || true
-                            docker rm ${APP_NAME} || true
-                            docker run -d \
-                              --name ${APP_NAME} \
-                              -p 3000:3000 \
-                              -e NODE_ENV=production \
-                              -e DB_PASSWORD=\${DB_PASSWORD} \
-                              --restart unless-stopped \
-                              ${IMAGE_NAME}:${IMAGE_TAG}
-                        """
-                    }
-                }
+                sh 'terraform apply -input=false tfplan'
             }
         }
     }
 
     post {
         always {
-            // Clean up old workspace files and untag local docker images to save disk space
-            sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
-            cleanWs()
-        }
-        success {
-            echo "Pipeline executed successfully and application deployed!"
-        }
-        failure {
-            echo "Pipeline failed. Check stage logs for details."
+            // Clean up binary plan files locally
+            sh 'rm -f tfplan'
         }
     }
 }
