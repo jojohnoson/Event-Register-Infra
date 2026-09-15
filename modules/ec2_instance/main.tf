@@ -7,7 +7,8 @@ resource "aws_instance" "web" {
   key_name = var.key_pair
   user_data = file("${path.module}/userdata.sh")
   tags = {
-    Name = var.instance_name
+    Name = "${var.instance_name}-${var.environment}"
+    Environment = var.environment
   }
 }
 

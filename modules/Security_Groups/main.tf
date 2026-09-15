@@ -24,6 +24,11 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
+  tags = {
+    Name = "ALB-SG-${var.environment}"
+    Environment = var.environment
+  }
 }
 
 resource "aws_security_group" "ec2_sg" {
@@ -57,5 +62,10 @@ resource "aws_security_group" "ec2_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "EC2-SG-${var.environment}"
+    Environment = var.environment
   }
 }

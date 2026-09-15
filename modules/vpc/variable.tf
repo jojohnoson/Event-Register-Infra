@@ -4,6 +4,12 @@ variable "vpc_cidr_block"{
     default = "10.0.0.0/16"
 }
 
+variable "environment" {
+  type        = string
+  description = "The current deployment workspace/environment name"
+}
+
+
 variable "rt-1_cidrblock"{
     description = "Route for IGW"
     type = string

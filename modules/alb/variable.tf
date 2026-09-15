@@ -3,6 +3,11 @@ variable "security_group"{
     type = list(string)
 }
 
+variable "environment" {
+  type        = string
+  description = "The current deployment workspace/environment name"
+}
+
 variable "subnets" {
   description = "List of Subnet IDs for ALB"
   type        = list(string)

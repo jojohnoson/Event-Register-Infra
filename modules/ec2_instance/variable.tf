@@ -32,6 +32,11 @@ variable "sg" {
   type = list(string)
 }
 
+variable "environment" {
+  type        = string
+  description = "The current deployment workspace/environment name"
+}
+
 variable "instance_name" {
   description = "Name of the Instance"
   type = string

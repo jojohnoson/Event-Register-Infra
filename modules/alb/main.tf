@@ -1,5 +1,5 @@
 resource "aws_lb" "alb" {
-  name               = "${var.alb_name}-${terraform.workspace}"
+  name               = "${var.alb_name}-${var.environment}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = var.security_group
@@ -8,7 +8,8 @@ resource "aws_lb" "alb" {
   enable_deletion_protection = false
 
   tags = {
-    Environment = terraform.workspace
+    Name = "Main-Alb-${var.environment}"
+    Environment = var.environment
   }
 }
 resource "aws_lb_target_group" "tg" {

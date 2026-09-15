@@ -2,7 +2,8 @@ resource "aws_vpc" "my_vpc" {
   cidr_block = var.vpc_cidr_block
 
   tags = {
-    Name = "my_vpc"
+    Name = "my_vpc-${var.environment}"
+    Environment = var.environment
   }
 }
 
@@ -10,7 +11,8 @@ resource "aws_internet_gateway" "my_igw"{
     vpc_id = aws_vpc.my_vpc.id
 
     tags = {
-      Name = "my_igw"
+      Name = "my_igw-${var.environment}"
+      Environment = var.environment
     }
 }
 
@@ -23,7 +25,8 @@ resource "aws_route_table" "rt-1" {
   }
 
   tags = {
-    Name = "rt-1"
+    Name = "rt-1-${var.environment}"
+    Environment = var.environment
   }
 }
 
@@ -34,7 +37,8 @@ resource "aws_subnet" "subnet-1"{
     map_public_ip_on_launch = true
 
     tags = {
-      Name = "Subnet-1"
+      Name = "Subnet-1-${var.environment}"
+      Environment = var.environment
     }
 }
 
@@ -45,7 +49,8 @@ resource "aws_subnet" "subnet-2"{
     map_public_ip_on_launch = false
 
     tags = {
-      Name = "Subnet-2"
+      Name = "Subnet-2-${var.environment}"
+       Environment = var.environment
     }
 }
 
@@ -68,7 +73,8 @@ resource "aws_nat_gateway" "nat" {
   subnet_id     = aws_subnet.subnet-1.id
 
   tags = {
-    Name = "NAT"
+    Name = "NAT-${var.environment}"
+    Environment = var.environment
   }
 
   depends_on = [aws_internet_gateway.my_igw]
@@ -84,7 +90,8 @@ resource "aws_route_table" "rt-2"{
     }
 
     tags = {
-      Name = "rt-2"
+      Name = "rt-2-${var.environment}"
+      Environment = var.environment
     }
 }
 

@@ -2,6 +2,7 @@ module "sg" {
   source = "./modules/Security_Groups"
   
   alb_name = var.alb_name
+  environment = terraform.workspace
   vpc_id   = module.vpc.vpc_id
 }
 
@@ -9,6 +10,7 @@ module "vpc" {
   source = "./modules/vpc"
 
   vpc_cidr_block = var.vpc_cidr
+  environment = terraform.workspace
   sub1_cidr_block = var.root_sub1_cidr
   sub2_cidr_block = var.root_sub2_cidr
   sub1_az        = var.root_sub1_az
@@ -23,6 +25,7 @@ module "web_server-1" {
   sg                 = [module.sg.ec2_sg_id]
   ec2_type           = lookup(var.type, terraform.workspace, "t3.micro")
   associate_public_ip = true
+  environment = terraform.workspace
   alb_name           = var.alb_name
   instance_name      = var.server_1
   key_pair           = var.key_access
@@ -33,6 +36,7 @@ module "web_server-2" {
 
   vpc_id             = module.vpc.vpc_id
   sg                 = [module.sg.ec2_sg_id]
+  environment = terraform.workspace
   subnet_id          = module.vpc.sub2_id
   key_pair           = var.key_access
   depends_on         = [module.vpc]
@@ -49,6 +53,7 @@ module "alb" {
   subnets        = [module.vpc.sub1_id, module.vpc.sub2_id]
   security_group = [module.sg.alb_sg_id]
   vpc_id         = module.vpc.vpc_id
+  environment = terraform.workspace
 
   instance_ids = {
     web1 = module.web_server-1.instance_id
