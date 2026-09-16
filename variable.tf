@@ -3,10 +3,6 @@ variable "region" {
   type = string
 }
 
-variable "s3_bucket_name"{
-  type = string
-}
-
 variable "alb_name"{
   type = string
   default = "Main Application LB"
