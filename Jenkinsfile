@@ -26,40 +26,22 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'aws-credentials-usr', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'aws-credentials-pwd', variable: 'AWS_SECRET_ACCESS_KEY'),
-                    string(credentialsId: 'aws-default-region', variable: 'AWS_DEFAULT_REGION')
-                ]) {
-                    sh 'terraform init'
-                }
+                sh 'terraform init'
             }
         }
 
         stage('Terraform Format & Validate') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'aws-credentials-usr', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'aws-credentials-pwd', variable: 'AWS_SECRET_ACCESS_KEY'),
-                    string(credentialsId: 'aws-default-region', variable: 'AWS_DEFAULT_REGION')
-                ]) {
-                    sh 'terraform fmt'
-                    sh 'terraform validate'
-                }
+                sh 'terraform fmt'
+                sh 'terraform validate'
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'aws-credentials-usr', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'aws-credentials-pwd', variable: 'AWS_SECRET_ACCESS_KEY'),
-                    string(credentialsId: 'aws-default-region', variable: 'AWS_DEFAULT_REGION')
-                ]) {
-                    sh 'rm -f terraformstate.txt tfplan'
-                    sh 'terraform plan -out=tfplan'
-                    sh 'terraform show -no-color tfplan > terraformstate.txt'
-                }
+                sh 'rm -f terraformstate.txt tfplan'
+                sh 'terraform plan -out=tfplan'
+                sh 'terraform show -no-color tfplan > terraformstate.txt'
             }
         }
 
@@ -71,13 +53,7 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'aws-credentials-usr', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'aws-credentials-pwd', variable: 'AWS_SECRET_ACCESS_KEY'),
-                    string(credentialsId: 'aws-default-region', variable: 'AWS_DEFAULT_REGION')
-                ]) {
-                    sh 'terraform apply -input=false tfplan'
-                }
+                sh 'terraform apply -input=false tfplan'
             }
         }
     }
