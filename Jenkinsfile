@@ -35,16 +35,16 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                // Initializes modules and S3 backend non-interactively
-                sh 'terraform init -input=false'
+                // Initializes modules and S3 backend
+                sh 'terraform init'
             }
         }
 
         stage('Terraform Format & Validate') {
             steps {
-                // Automatically formats files and validates syntax
-                sh 'terraform fmt'
-                sh 'terraform validate'
+        // Automatically formats files without throwing an exit code 3 failure
+        sh 'terraform fmt'
+        sh 'terraform validate'
             }
         }
 
@@ -54,7 +54,7 @@ pipeline {
                 sh 'rm -f terraformstate.txt tfplan'
 
                 // Generates binary execution plan
-                sh 'terraform plan -input=false -out=tfplan'
+                sh 'terraform plan -out=tfplan'
                 
                 // Overwrites terraformstate.txt with ONLY the latest plan output
                 sh 'terraform show -no-color tfplan > terraformstate.txt'
