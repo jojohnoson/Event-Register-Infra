@@ -5,7 +5,7 @@ variable "region" {
 
 variable "alb_name"{
   type = string
-  default = "Main Application LB"
+  default = "Main-Application-LB"
 }
 
 variable "vpc_cidr" {
