@@ -8,6 +8,16 @@ pipeline {
         
         // AWS Region stored in Jenkins Secret Text ID 'aws-default-region' (value: ap-south-1)
         AWS_DEFAULT_REGION    = credentials('aws-default-region')
+
+        TF_VAR_region          = 'ap-south-1'
+        TF_VAR_vpc_cidr        = '10.0.0.0/16'
+        TF_VAR_root_sub1_cidr  = '10.0.1.0/24'
+        TF_VAR_root_sub2_cidr  = '10.0.2.0/24'
+        TF_VAR_root_sub1_az    = 'ap-south-1a'
+        TF_VAR_root_sub2_az    = 'ap-south-1b'
+        TF_VAR_server_1        = 't2.micro'
+        TF_VAR_server_2        = 't2.micro'
+        TF_VAR_key_access      = 'mypassword'
     }
 
     triggers {
@@ -25,16 +35,16 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                // Initializes modules and S3 backend
-                sh 'terraform init'
+                // Initializes modules and S3 backend non-interactively
+                sh 'terraform init -input=false'
             }
         }
 
         stage('Terraform Format & Validate') {
             steps {
-        // Automatically formats files without throwing an exit code 3 failure
-        sh 'terraform fmt'
-        sh 'terraform validate'
+                // Automatically formats files and validates syntax
+                sh 'terraform fmt'
+                sh 'terraform validate'
             }
         }
 
@@ -44,7 +54,7 @@ pipeline {
                 sh 'rm -f terraformstate.txt tfplan'
 
                 // Generates binary execution plan
-                sh 'terraform plan -out=tfplan'
+                sh 'terraform plan -input=false -out=tfplan'
                 
                 // Overwrites terraformstate.txt with ONLY the latest plan output
                 sh 'terraform show -no-color tfplan > terraformstate.txt'
