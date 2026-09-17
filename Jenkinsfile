@@ -1,18 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        TF_VAR_region          = 'ap-south-1'
-        TF_VAR_vpc_cidr        = '10.0.0.0/16'
-        TF_VAR_root_sub1_cidr  = '10.0.1.0/24'
-        TF_VAR_root_sub2_cidr  = '10.0.2.0/24'
-        TF_VAR_root_sub1_az    = 'ap-south-1a'
-        TF_VAR_root_sub2_az    = 'ap-south-1b'
-        TF_VAR_server_1        = 't2.micro'
-        TF_VAR_server_2        = 't2.micro'
-        TF_VAR_key_access      = 'mypassword'
-    }
-
     triggers {
         githubPush()
     }
